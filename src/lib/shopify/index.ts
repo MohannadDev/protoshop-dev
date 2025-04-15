@@ -13,30 +13,29 @@ type ExtractVariables<T> = T extends { variables: object }
   : never;
   const endpoint = `${domain}${SHOPIFY_GRAPHQL_API_ENDPOINT}`;
   const key = env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
-// type ShopifyFetchParams<T> = {
-//     cache?: RequestCache;
-//     headers?: HeadersInit;
-//     query: string;
-//     tags?: string[];
-//     variables?: ExtractVariables<T>;
-//   };
+type ShopifyFetchParams<T> = {
+    cache?: RequestCache;
+    headers?: HeadersInit;
+    query: string;
+    tags?: string[];
+    variables?: ExtractVariables<T>;
+  };
 export async function shopifyFetch<T>({
   cache = "force-cache",
   headers,
   query,
   tags,
   variables,
-}: {
-  cache?: RequestCache;
-  headers?: HeadersInit;
-  query: string;
-  tags?: string[];
-  variables?: ExtractVariables<T>;
-}): Promise<{ status: number; body: T } | never> {
+}: ShopifyFetchParams<T>): Promise<{ status: number; body: T } | never> {
   try {
     if (!domain || !key) {
       throw new Error("Missing Shopify credentials");
     }
+    
+    console.log('Debug Info:');
+    console.log('Domain:', domain);
+    console.log('Endpoint:', endpoint);
+    console.log('Access Token:', key.substring(0, 5) + '...');
     
     const result = await fetch(endpoint, {
       method: "POST",
@@ -52,12 +51,17 @@ export async function shopifyFetch<T>({
       cache,
       ...(tags && { next: { tags } }),
     });
-console.log(result, endpoint)
+
     if (!result.ok) {
+      console.log('Response Status:', result.status);
+      console.log('Response Status Text:', result.statusText);
+      console.log('Response Headers:', Object.fromEntries(result.headers.entries()));
+      const errorText = await result.text();
+      console.log('Error Response:', errorText);
+
       throw new Error(`HTTP error! status: ${result.status}`);
-    //    console.log(await result);
     }
-    console.log(result)
+
     const body = await result.json();
     if (body.errors) {
       throw body.errors[0];
@@ -67,6 +71,7 @@ console.log(result, endpoint)
       status: result.status,
       body,
     };
+
   } catch (error) {
     if (isShopifyError(error)) {
         console.log(error)
