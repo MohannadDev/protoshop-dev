@@ -1,31 +1,36 @@
+
 import Grid from "@/components/grid";
 import ProductGridItems from "@/components/layout/product-grid-items";
 import { defaultSort, sorting } from "@/lib/constants";
 import { getProducts } from "@/lib/shopify";
+import React, { Suspense } from "react";
 
 export const metadata = {
   title: "Search",
   description: "Search for products in the store.",
 };
 
-export default async function SearchPage({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) {
-  const { sort, s: searchValue } = await searchParams as { [key: string]: string };
+type SearchPageProps = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+async function SearchResults({ searchParams }: SearchPageProps) {
+  const params = await searchParams;
+  const { sort, s: searchValue } = params;
+  const searchQuery = Array.isArray(searchValue) ? searchValue[0] : searchValue;
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;
-  const products = await getProducts({ sortKey, reverse, query: searchValue });
+  const products = await getProducts({ sortKey, reverse, query: searchQuery });
   const resultsText = products.length > 1 ? "results" : "result";
+
   return (
     <>
-      {searchValue ? (
+      {searchQuery ? (
         <p className="mb-4">
           {products.length === 0
             ? "There are no products that match"
             : `Showing ${products.length} ${resultsText} for `}
-          <span>&quot;{searchValue}&quot;</span>
+          <span>&quot;{searchQuery}&quot;</span>
         </p>
       ) : null}
       {products.length > 0 ? (
@@ -34,5 +39,13 @@ export default async function SearchPage({
         </Grid>
       ) : null}
     </>
+  );
+}
+
+export default function SearchPage(props: SearchPageProps) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchResults {...props} />
+    </Suspense>
   );
 }

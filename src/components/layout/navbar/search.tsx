@@ -2,10 +2,16 @@
 import { createUrl } from "@/lib/utils";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 
 export default function Search() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [searchValue, setSearchValue] = useState("");
+
+  useEffect(() => {
+    setSearchValue(searchParams?.get("s") || "");
+  }, [searchParams]);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -22,18 +28,19 @@ export default function Search() {
 
     router.push(createUrl("/search", newParams));
   }
+
   return (
     <form
       onSubmit={onSubmit}
       className="w-max-[550px] relative w-full lg:w-80 xl:w-full"
     >
       <input
-        key={searchParams?.get("s")}
         type="text"
         name="search"
         placeholder="Search for products..."
         autoComplete="off"
-        defaultValue={searchParams?.get("s") || ""}
+        value={searchValue}
+        onChange={(e) => setSearchValue(e.target.value)}
         className="w-full px-4 py-2 text-black bg-white border rounded-lg text-md placeholder:text-neutral-500 md:text-sm dark:border-neutral-800 dark:bg-transparent dark:text-white dark:placeholder:text-neutral-400"
       />
       <div className="absolute top-0 right-0 flex items-center h-full mr-3">
