@@ -1,6 +1,14 @@
 import { productFragment } from "../fragments/product";
-
 export const getProductQuery = /* GraphQL */ `
+  query getProduct($handle: String!) {
+    product(handle: $handle) {
+      ...product
+    }
+  }
+  ${productFragment}
+`;
+
+export const getProductsQuery = /* GraphQL */ `
   query getProducts(
     $sortKey: ProductSortKeys
     $reverse: Boolean
@@ -13,6 +21,17 @@ export const getProductQuery = /* GraphQL */ `
         }
       }
     }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
   }
   ${productFragment}
 `;
+export const getProductRecommendationsQuery = /*GraphQL*/ `
+query getProductRecommendations($productId: ID!) {
+  productRecommendations(productId: $productId) {
+    ...product
+  }
+}
+${productFragment}`;

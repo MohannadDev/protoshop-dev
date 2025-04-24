@@ -1,6 +1,7 @@
 
 import Grid from "@/components/grid";
 import ProductGridItems from "@/components/layout/product-grid-items";
+import SuspenseFallback from "@/components/suspenseFallback";
 import { defaultSort, sorting } from "@/lib/constants";
 import { getProducts } from "@/lib/shopify";
 import React, { Suspense } from "react";
@@ -44,7 +45,7 @@ async function SearchResults({ searchParams }: SearchPageProps) {
 
 export default function SearchPage(props: SearchPageProps) {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<SuspenseFallback/>}>
       <SearchResults {...props} />
     </Suspense>
   );

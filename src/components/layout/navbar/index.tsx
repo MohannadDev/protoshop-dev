@@ -5,24 +5,25 @@ import MobileMenu from "./mobile-menu";
 import Search from "./search";
 import LogoIcon from "@/components/logo-squared";
 // import LogoSquare from "@/components/logo-square";
-// import CartModal from "@/components/cart/modal";
+import CartModal from "@/components/cart/modal";
 
 export default async function Navbar() {
     const menu = await getMenu("next-js-menu");
+    console.log(menu)
   return (
     <nav className="flex items-center justify-between p-4 lg:px-6 sticky top-0 backdrop-blur-sm z-[999]">
-    <div className="block flex-none md:hidden">
+    <div className="flex-none block md:hidden">
       <MobileMenu menu={menu} />
     </div>
-    <div className="flex w-full items-center">
+    <div className="flex items-center w-full">
       <div className="flex w-full md:w-1/3">
         <Link
           href={"/"}
           prefetch={true}
-          className="mr-2 flex w-full items-center justify-center md:w-auto lg:mr-6"
+          className="flex items-center justify-center w-full mr-2 md:w-auto lg:mr-6"
         >
           <LogoIcon />
-          <div className="ml-2 flex-none text-sm font-medium uppercase md:hidden lg:block">
+          <div className="flex-none ml-2 text-sm font-medium uppercase md:hidden lg:block">
             {process.env.SITE_NAME}
           </div>
         </Link>
@@ -43,11 +44,11 @@ export default async function Navbar() {
           </ul>
         ) : null}
       </div>
-      <div className="hidden justify-center md:flex md:w-1/3">
+      <div className="justify-center hidden md:flex md:w-1/3">
         <Search />
       </div>
       <div className="flex justify-end md:w-1/3">
-        {/* <CartModal /> */}
+        <CartModal />
       </div>
     </div>
   </nav>
