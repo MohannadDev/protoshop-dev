@@ -36,6 +36,9 @@ import {
 } from "./queries/collection";
 import { addToCartMutation, createCartMutation, editCartItemsMutation, removeFromCartMutation } from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
+import { revalidateTag } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
 
 const domain = env.SHOPIFY_STORE_DOMAIN
   ? ensureStartsWith(env.SHOPIFY_STORE_DOMAIN, "https://")
@@ -371,3 +374,63 @@ export async function updateCart(
 
   return reshapeCart(res.body.data.cartLinesUpdate.cart);
 }
+
+// This is called from `app/api/revalidate.ts` so providers can control revalidation logic.
+export async function revalidate(req: NextRequest): Promise<NextResponse> {
+  // We always need to respond with a 200 status code to Shopify,
+  // otherwise it will continue to retry the request.
+
+  const collectionWebhooks = [
+    "collections/create",
+    "collections/delete",
+    "collections/update",
+  ];
+  const productWebhooks = [
+    "products/create",
+    "products/delete",
+    "products/update",
+  ];
+  const topic = (await headers()).get("x-shopify-topic") || "unknown";
+  const secret = req.nextUrl.searchParams.get("secret");
+  const isCollectionUpdate = collectionWebhooks.includes(topic);
+  const isProductUpdate = productWebhooks.includes(topic);
+
+  if (!secret || secret !== env.SHOPIFY_REVALIDATION_SECRET) {
+    console.error("Invalid revalidation secret.");
+    return NextResponse.json({ status: 200 });
+  }
+
+  if (!isCollectionUpdate && !isProductUpdate) {
+    // We don't need to revalidate anything for any other topics.
+    return NextResponse.json({ status: 200 });
+  }
+
+  if (isCollectionUpdate) {
+    revalidateTag(TAGS.collections);
+  }
+
+  if (isProductUpdate) {
+    revalidateTag(TAGS.products);
+  }
+
+  return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
+}
+
+// export async function getPage(handle: string): Promise<Page> {
+//   const res = await shopifyFetch<ShopifyPageOperation>({
+//     query: getPageQuery,
+//     cache: "no-store",
+//     variables: { handle },
+//   });
+
+//   return res.body.data.pageByHandle;
+// }
+
+// export async function getPages(): Promise<Page[]> {
+//   const res = await shopifyFetch<ShopifyPagesOperation>({
+//     query: getPagesQuery,
+//     cache: "no-store",
+//   });
+
+//   return removeEdgesAndNodes(res.body.data.pages);
+// }
