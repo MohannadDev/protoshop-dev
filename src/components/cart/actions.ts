@@ -114,3 +114,16 @@ export async function createCartAndSetCookie() {
   const cart = await createCart();
   (await cookies()).set("cartId", cart.id!);
 }
+
+export async function initializeCart() {
+  const cookieStore = await cookies();
+  const cartId = cookieStore.get("cartId")?.value;
+  
+  if (!cartId) {
+    const cart = await createCart();
+    cookieStore.set("cartId", cart.id!);
+    return { cart: await getCart(cart.id), cartId: cart.id };
+  }
+  
+  return { cart: await getCart(cartId), cartId };
+}

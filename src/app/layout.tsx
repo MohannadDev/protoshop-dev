@@ -6,9 +6,7 @@ import Navbar from "@/components/layout/navbar";
 import { Suspense } from "react";
 import SuspenseFallback from "@/components/suspenseFallback";
 import { CartProvider } from "@/components/cart/cart-context";
-import { cookies } from "next/headers";
-import { getCart } from "@/lib/shopify";
-import { createCartAndSetCookie } from "@/components/cart/actions";
+import { initializeCart } from "@/components/cart/actions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,23 +28,14 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cartId = (await cookies()).get("cartId")?.value;
-  let cartPromise;
-  
-  if (!cartId) {
-    await createCartAndSetCookie();
-    const newCartId = (await cookies()).get("cartId")?.value;
-    cartPromise = getCart(newCartId);
-  } else {
-    cartPromise = getCart(cartId);
-  }
+  const { cart: initialCart } = await initializeCart();
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CartProvider cartPromise={cartPromise}>
+        <CartProvider cartPromise={Promise.resolve(initialCart)}>
           <Suspense fallback={<SuspenseFallback />}>
             <Navbar />
           </Suspense>
