@@ -116,14 +116,44 @@ export async function createCartAndSetCookie() {
 }
 
 export async function initializeCart() {
-  const cookieStore = await cookies();
-  const cartId = cookieStore.get("cartId")?.value;
-  
-  if (!cartId) {
-    const cart = await createCart();
-    cookieStore.set("cartId", cart.id!);
-    return { cart: await getCart(cart.id), cartId: cart.id };
+  try {
+    const cookieStore = await cookies();
+    const cartId = cookieStore.get("cartId")?.value;
+    
+    if (!cartId) {
+      const cart = await createCart();
+      if (!cart.id) throw new Error("Failed to create cart");
+      
+      // Set cookie with appropriate options
+      cookieStore.set("cartId", cart.id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/'
+      });
+      
+      return { cart: await getCart(cart.id), cartId: cart.id };
+    }
+    
+    const cart = await getCart(cartId);
+    if (!cart) {
+      // If cart not found, create a new one
+      const newCart = await createCart();
+      if (!newCart.id) throw new Error("Failed to create cart");
+      
+      cookieStore.set("cartId", newCart.id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/'
+      });
+      
+      return { cart: await getCart(newCart.id), cartId: newCart.id };
+    }
+    
+    return { cart, cartId };
+  } catch (error) {
+    console.error('Error initializing cart:', error);
+    return { cart: null, cartId: null };
   }
-  
-  return { cart: await getCart(cartId), cartId };
 }
