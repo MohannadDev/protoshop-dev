@@ -38,8 +38,8 @@ export default function VariantSelector({
       {}
     ),
   }));
-  console.log(options);
-  console.log(variants);
+  // console.log(options);
+  // console.log(variants);
   return options.map((option) => (
     <form key={option.id}>
       <dl className="mb-8">

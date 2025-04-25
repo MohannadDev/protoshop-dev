@@ -191,9 +191,9 @@ export type ShopifyAddToCartOperation = {
     };
   };
   variables: {
-    cartID: string;
+    cartId: string;
     lines: {
-      merchandiseID: string;
+      merchandiseId: string;
       quantity: number;
     }[];
   };
@@ -217,7 +217,7 @@ export type ShopifyUpdateCartOperation = {
     cartId: string;
     lines: {
       id: string;
-      merchandiseID: string;
+      merchandiseId: string;
       quantity: number;
     }[];
   };

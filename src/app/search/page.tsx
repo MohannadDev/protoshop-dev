@@ -1,37 +1,32 @@
 
 import Grid from "@/components/grid";
 import ProductGridItems from "@/components/layout/product-grid-items";
-import SuspenseFallback from "@/components/suspenseFallback";
 import { defaultSort, sorting } from "@/lib/constants";
 import { getProducts } from "@/lib/shopify";
-import React, { Suspense } from "react";
 
 export const metadata = {
   title: "Search",
   description: "Search for products in the store.",
 };
 
-type SearchPageProps = {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
-async function SearchResults({ searchParams }: SearchPageProps) {
-  const params = await searchParams;
-  const { sort, s: searchValue } = params;
-  const searchQuery = Array.isArray(searchValue) ? searchValue[0] : searchValue;
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { sort, q: searchValue } = (await searchParams) as { [key: string]: string };
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;
-  const products = await getProducts({ sortKey, reverse, query: searchQuery });
+  const products = await getProducts({ sortKey, reverse, query: searchValue });
   const resultsText = products.length > 1 ? "results" : "result";
-
   return (
     <>
-      {searchQuery ? (
+      {searchValue ? (
         <p className="mb-4">
           {products.length === 0
             ? "There are no products that match"
             : `Showing ${products.length} ${resultsText} for `}
-          <span>&quot;{searchQuery}&quot;</span>
+          <span>&quot;{searchValue}&quot;</span>
         </p>
       ) : null}
       {products.length > 0 ? (
@@ -40,13 +35,5 @@ async function SearchResults({ searchParams }: SearchPageProps) {
         </Grid>
       ) : null}
     </>
-  );
-}
-
-export default function SearchPage(props: SearchPageProps) {
-  return (
-    <Suspense fallback={<SuspenseFallback/>}>
-      <SearchResults {...props} />
-    </Suspense>
   );
 }

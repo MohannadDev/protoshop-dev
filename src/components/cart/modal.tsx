@@ -191,8 +191,8 @@ export default function CartModal() {
                       <p>Taxes</p>
                       <Price
                         className="text-base text-right text-black dark:text-white"
-                        amount={cart.cost.totalTaxAmount.amount}
-                        currencyCode={cart.cost.totalTaxAmount.currencyCode}
+                        amount={cart?.cost?.totalTaxAmount?.amount || "0"}
+                        currencyCode={cart?.cost?.totalTaxAmount?.currencyCode || "USD"}
                       />
                     </div>
                     <div className="flex items-center justify-between pt-1 pb-1 mb-3 border-b border-neutral-200 dark:border-neutral-700">
@@ -203,8 +203,8 @@ export default function CartModal() {
                       <p>Total</p>
                       <Price
                         className="text-base text-right text-black dark:text-white"
-                        amount={cart.cost.totalAmount.amount}
-                        currencyCode={cart.cost.totalAmount.currencyCode}
+                        amount={cart?.cost?.totalAmount?.amount || "0"}
+                        currencyCode={cart?.cost?.totalAmount?.currencyCode || "USD"}
                       />
                     </div>
                   </div>

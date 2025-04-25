@@ -1,12 +1,12 @@
 "use client";
 import { Cart, CartItem, Product, ProductVariant } from "@/lib/shopify/types";
-import { useContext, createContext, use, useOptimistic, useMemo } from "react";
+import { useContext, createContext, use, useOptimistic } from "react";
 
 type UpdateType = "plus" | "minus" | "delete";
 
 type CartContextType = {
   cart: Cart | undefined;
-  updateCartItem: (merchandiseID: string, updateType: UpdateType) => void;
+  updateCartItem: (merchandiseId: string, updateType: UpdateType) => void;
   addCartItem: (variant: ProductVariant, product: Product) => void;
 };
 type cartAction =
@@ -18,6 +18,7 @@ type cartAction =
       type: "ADD_ITEM";
       payload: { variant: ProductVariant; product: Product };
     };
+
 const cartContext = createContext<CartContextType | undefined>(undefined);
 function createEmptyCart(): Cart {
   return {
@@ -35,8 +36,6 @@ function createEmptyCart(): Cart {
 function updateCartTotals(
   lines: CartItem[]
 ): Pick<Cart, "totalQuantity" | "cost"> {
-  //todo: readmore
-
   const totalQuantity = lines.reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = lines.reduce(
     (sum, item) => sum + Number(item.cost.totalAmount.amount),
@@ -60,7 +59,7 @@ function updateCartItem(
   updateType: UpdateType
 ): CartItem | null {
   if (updateType === "delete") return null;
-  const newQuantity = updateType === "plus" ? item.quantity++ : item.quantity--;
+  const newQuantity = updateType === "plus" ? item.quantity + 1 : item.quantity - 1;
   if (newQuantity === 0) return null;
   const singleItemAmount = Number(item.cost.totalAmount.amount) / item.quantity;
   const newTotalAmount = calculateItemCost(
@@ -150,7 +149,6 @@ function cartReducer(state: Cart | undefined, action: cartAction): Cart {
             item.merchandise.id === variant.id ? updatedItem : item
           )
         : [...currentCart.lines, updatedItem];
-      //todo: readmore
       return {
         ...currentCart,
         ...updateCartTotals(updatedLines),
@@ -170,22 +168,31 @@ export function CartProvider({
   const initialCart = use(cartPromise);
   const [optimisticCart, updateOptimisticCart] = useOptimistic(
     initialCart,
-    cartReducer
+    (state, newCart: Cart) => ({
+      ...state,
+      ...newCart,
+      lines: [...(newCart.lines || [])],
+    })
   );
   const updateCartItem = (merchendiseID: string, updateType: UpdateType) => {
-    updateOptimisticCart({
-      type: "UPDATE_ITEM",
-      payload: { merchendiseID, updateType },
+    const newCart = cartReducer(optimisticCart, {
+      type: 'UPDATE_ITEM',
+      payload: { merchendiseID, updateType }
     });
+    updateOptimisticCart(newCart);
   };
   const addCartItem = (variant: ProductVariant, product: Product) => {
-    updateOptimisticCart({ type: "ADD_ITEM", payload: { variant, product } });
+    const newCart = cartReducer(optimisticCart, {
+      type: 'ADD_ITEM',
+      payload: { variant, product }
+    });
+    updateOptimisticCart(newCart);
   };
-  const value = useMemo(
-    () => ({ cart: optimisticCart, updateCartItem, addCartItem }),
-    [optimisticCart]
+  return (
+    <cartContext.Provider value={{ cart: optimisticCart, updateCartItem, addCartItem }}>
+      {children}
+    </cartContext.Provider>
   );
-  return <cartContext.Provider value={value}>{children}</cartContext.Provider>;
 }
 
 export function useCart() {

@@ -12,9 +12,9 @@ import { Suspense } from "react";
 export default async function ProductPage({
   params,
 }: {
-  params: { handle: string };
+  params: Promise<{ handle: string }>;
 }) {
-  const product = await getProduct(params.handle);
+  const product = await getProduct((await params).handle);
   if (!product) return notFound();
   return (
     <ProductProvider>

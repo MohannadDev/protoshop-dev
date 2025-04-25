@@ -9,7 +9,6 @@ import CartModal from "@/components/cart/modal";
 
 export default async function Navbar() {
     const menu = await getMenu("next-js-menu");
-    console.log(menu)
   return (
     <nav className="flex items-center justify-between p-4 lg:px-6 sticky top-0 backdrop-blur-sm z-[999]">
     <div className="flex-none block md:hidden">

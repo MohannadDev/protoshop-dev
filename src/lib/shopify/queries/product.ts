@@ -21,10 +21,7 @@ export const getProductsQuery = /* GraphQL */ `
         }
       }
     }
-    pageInfo {
-      hasNextPage
-      endCursor
-    }
+  
   }
   ${productFragment}
 `;

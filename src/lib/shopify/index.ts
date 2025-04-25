@@ -29,7 +29,7 @@ import {
 } from "./types";
 import { ensureStartsWith } from "../utils";
 import { isShopifyError } from "../type-guards";
-import { getProductQuery, getProductRecommendationsQuery } from "./queries/product";
+import { getProductQuery, getProductRecommendationsQuery, getProductsQuery } from "./queries/product";
 import {
   getCollectionProductsQuery,
   getCollectionsQuery,
@@ -61,6 +61,7 @@ export async function shopifyFetch<T>({
 }: ShopifyFetchParams<T>): Promise<{ status: number; body: T } | never> {
   try {
     if (!domain || !key) {
+      console.error('Missing Shopify credentials:', { domain: !!domain, key: !!key });
       throw new Error("Missing Shopify credentials");
     }
 
@@ -78,14 +79,15 @@ export async function shopifyFetch<T>({
       cache,
       ...(tags && { next: { tags } }),
     });
-    console.log("shopify fetch");
-    console.log(headers, tags, query, variables);
+    // console.log("shopify fetch response status:", result.status);
+    // console.log(headers, tags, query, variables);
     if (!result.ok) {
       throw new Error(`HTTP error! status: ${result.status}`);
     }
 
     const body = await result.json();
     if (body.errors) {
+      console.error('Shopify API Error:', body.errors);
       throw body.errors[0];
     }
 
@@ -95,7 +97,12 @@ export async function shopifyFetch<T>({
     };
   } catch (error) {
     if (isShopifyError(error)) {
-      console.log(error);
+      console.error('Shopify Error:', {
+        cause: error.cause?.toString(),
+        status: error.status,
+        message: error.message,
+        query
+      });
       throw {
         cause: error.cause?.toString() || "unknown",
         status: error.status || 500,
@@ -183,8 +190,9 @@ export async function getProducts({
   reverse?: boolean;
   sortKey?: string;
 }): Promise<Product[]> {
+
   const res = await shopifyFetch<ShopifyProductsOperation>({
-    query: getProductQuery,
+    query: getProductsQuery,
     tags: [TAGS.products],
     variables: {
       query,
@@ -279,7 +287,7 @@ export async function getProduct(handle: string) {
       handle,
     },
   });
-  console.log(res);
+  // console.log(res);
   return reshapeProduct(res.body.data.product, false);
 }
 function reshapeCart(cart: ShopifyCart): Cart {
@@ -309,14 +317,13 @@ export async function removeFromCart(cartId: string, lineIds: string[]) : Promis
 }
 
 export async function addToCart(
-  cartID: string,
-  // lines: { merchandiseID: string; quantity: number}[]
-  lines: { merchandiseID: string; quantity: number }[]
+  cartId: string,
+  lines: { merchandiseId: string; quantity: number}[]
 ): Promise<Cart> {
   const res = await shopifyFetch<ShopifyAddToCartOperation>({
     query: addToCartMutation,
     variables: {
-      cartID,
+      cartId,
       lines,
     },
     cache: "no-cache",
@@ -332,7 +339,7 @@ export async function getProductRecommendations(productId: string): Promise<Prod
       productId,
     },
   });
-  console.log(res);
+  // console.log(res);
   return reshapeProducts(res.body.data.productRecommendations);
 }
 export async function getCart(cartId: string | undefined): Promise<Cart | undefined> {
@@ -351,7 +358,7 @@ export async function getCart(cartId: string | undefined): Promise<Cart | undefi
 }
 export async function updateCart(
   cartId: string,
-  lines: { id: string; merchandiseID: string; quantity: number }[]
+  lines: { id: string; merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
   const res = await shopifyFetch<ShopifyUpdateCartOperation>({
     query: editCartItemsMutation,
