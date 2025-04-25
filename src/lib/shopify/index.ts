@@ -26,6 +26,9 @@ import {
   ShopifyCreateCartOperation,
   ShopifyRemoveFromCartOperation,
   ShopifyUpdateCartOperation,
+  Page,
+  ShopifyPagesOperation,
+  ShopifyPageOperation,
 } from "./types";
 import { ensureStartsWith } from "../utils";
 import { isShopifyError } from "../type-guards";
@@ -39,6 +42,7 @@ import { getCartQuery } from "./queries/cart";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { getPageQuery, getPagesQuery } from "./queries/page";
 
 const domain = env.SHOPIFY_STORE_DOMAIN
   ? ensureStartsWith(env.SHOPIFY_STORE_DOMAIN, "https://")
@@ -394,7 +398,7 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
   const secret = req.nextUrl.searchParams.get("secret");
   const isCollectionUpdate = collectionWebhooks.includes(topic);
   const isProductUpdate = productWebhooks.includes(topic);
-
+  console.log("runs")
   if (!secret || secret !== env.SHOPIFY_REVALIDATION_SECRET) {
     console.error("Invalid revalidation secret.");
     return NextResponse.json({ status: 200 });
@@ -416,21 +420,22 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
 }
 
-// export async function getPage(handle: string): Promise<Page> {
-//   const res = await shopifyFetch<ShopifyPageOperation>({
-//     query: getPageQuery,
-//     cache: "no-store",
-//     variables: { handle },
-//   });
+export async function getPage(handle: string): Promise<Page> {
+  const res = await shopifyFetch<ShopifyPageOperation>({
+    query: getPageQuery,
+    cache: "no-store",
+    variables: { handle },
+  });
 
-//   return res.body.data.pageByHandle;
-// }
+  return res.body.data.pageByHandle;
+}
 
-// export async function getPages(): Promise<Page[]> {
-//   const res = await shopifyFetch<ShopifyPagesOperation>({
-//     query: getPagesQuery,
-//     cache: "no-store",
-//   });
 
-//   return removeEdgesAndNodes(res.body.data.pages);
-// }
+export async function getPages(): Promise<Page[]> {
+  const res = await shopifyFetch<ShopifyPagesOperation>({
+    query: getPagesQuery,
+    cache: "no-store",
+  });
+
+  return removeEdgesAndNodes(res.body.data.pages);
+}

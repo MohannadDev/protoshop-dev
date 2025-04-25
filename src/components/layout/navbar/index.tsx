@@ -4,7 +4,6 @@ import Link from "next/link";
 import MobileMenu from "./mobile-menu";
 import Search from "./search";
 import LogoIcon from "@/components/logo-squared";
-// import LogoSquare from "@/components/logo-square";
 import CartModal from "@/components/cart/modal";
 
 export default async function Navbar() {
