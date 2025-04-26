@@ -125,7 +125,7 @@ export async function initializeCart() {
       if (!cart.id) throw new Error("Failed to create cart");
       
       // Set cookie with appropriate options
-      cookieStore.set("cartId", cart.id, {
+      (await cookieStore).set("cartId", cart.id, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',

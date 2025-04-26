@@ -8,13 +8,7 @@ const envSchema = z.object({
     SHOPIFY_STOREFRONT_ACCESS_TOKEN:  z.string(),
     SHOPIFY_STORE_DOMAIN:  z.string()
 })
-// envSchema.parse(process.env)
-// declare global {
-//     namespace NodeJS {
-//         interface ProcessEnv extends z.infer<typeof envSchema> {}
-//     }
-// }
-//  Parse & export typed env
+
 const parsedEnv = envSchema.parse(process.env);
 
 export const env = parsedEnv;

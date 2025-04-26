@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import Price from "../price";
-import { Dialog, Transition, TransitionChild } from "@headlessui/react";
+import {
+  Dialog,
+  DialogPanel,
+  Transition,
+  TransitionChild,
+} from "@headlessui/react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
@@ -17,8 +22,8 @@ import { DeleteItemButton } from "./delete-item-button";
 import { EditItemQuantityButton } from "./edit-item-quantity-button";
 import { createUrl } from "@/lib/utils";
 type MerchandiseSearchParams = {
-    [key: string]: string
-}
+  [key: string]: string;
+};
 export default function CartModal() {
   const { cart, updateCartItem } = useCart();
   const [isOpen, setIsOpen] = useState(false);
@@ -46,11 +51,14 @@ export default function CartModal() {
   }, [isOpen, cart?.totalQuantity, quantityRef]);
   return (
     <>
-      <button aria-label="Open cart" onClick={openCart}>
-        <OpenCart quantity={cart?.totalQuantity} />
-      </button>
-      <Transition show={isOpen}>
-        <Dialog onClose={closeCart} className="relative z-50">
+      {!isOpen && (
+        <button aria-label="Open cart" onClick={openCart}>
+          <OpenCart quantity={cart?.totalQuantity} />
+        </button>
+      )}
+
+      <Transition show={isOpen} >
+        <Dialog onClose={closeCart} className="relative">
           <TransitionChild
             as={Fragment}
             enter="transition-all ease-in-out duration-300"
@@ -71,7 +79,7 @@ export default function CartModal() {
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <Dialog.Panel className="fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-neutral-200 bg-white/80 p-6 text-black backdrop-blur-xl md:w-[390px] dark:border-neutral-700 dark:bg-black/80 dark:text-white">
+            <DialogPanel className="z-[200] fixed bottom-0 right-0 top-0 flex h-full w-full flex-col border-l border-neutral-200 bg-white/80 p-6 text-black backdrop-blur-xl md:w-[390px] dark:border-neutral-700 dark:bg-black/80 dark:text-white">
               <div className="flex items-center justify-between">
                 <p className="text-lg font-semibold">My Cart</p>
                 <button aria-label="Close cart" onClick={closeCart}>
@@ -192,7 +200,9 @@ export default function CartModal() {
                       <Price
                         className="text-base text-right text-black dark:text-white"
                         amount={cart?.cost?.totalTaxAmount?.amount || "0"}
-                        currencyCode={cart?.cost?.totalTaxAmount?.currencyCode || "USD"}
+                        currencyCode={
+                          cart?.cost?.totalTaxAmount?.currencyCode || "USD"
+                        }
                       />
                     </div>
                     <div className="flex items-center justify-between pt-1 pb-1 mb-3 border-b border-neutral-200 dark:border-neutral-700">
@@ -204,7 +214,9 @@ export default function CartModal() {
                       <Price
                         className="text-base text-right text-black dark:text-white"
                         amount={cart?.cost?.totalAmount?.amount || "0"}
-                        currencyCode={cart?.cost?.totalAmount?.currencyCode || "USD"}
+                        currencyCode={
+                          cart?.cost?.totalAmount?.currencyCode || "USD"
+                        }
                       />
                     </div>
                   </div>
@@ -213,7 +225,7 @@ export default function CartModal() {
                   </form>
                 </div>
               )}
-            </Dialog.Panel>
+            </DialogPanel>
           </TransitionChild>
         </Dialog>
       </Transition>
@@ -221,15 +233,15 @@ export default function CartModal() {
   );
 }
 function CheckoutButton() {
-    const { pending } = useFormStatus();
-  
-    return (
-      <button
-        className="block w-full p-3 text-sm font-medium text-center text-white bg-blue-600 rounded-full opacity-90 hover:opacity-100"
-        type="submit"
-        disabled={pending}
-      >
-        {pending ? <LoadingDots className="bg-white" /> : "Proceed to Checkout"}
-      </button>
-    );
-  }
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      className="block w-full p-3 text-sm font-medium text-center text-white bg-blue-600 rounded-full opacity-90 hover:opacity-100"
+      type="submit"
+      disabled={pending}
+    >
+      {pending ? <LoadingDots className="bg-white" /> : "Proceed to Checkout"}
+    </button>
+  );
+}

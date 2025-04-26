@@ -9,12 +9,18 @@ import CartModal from "@/components/cart/modal";
 export default async function Navbar() {
     const menu = await getMenu("next-js-menu");
   return (
-    <nav className="flex items-center justify-between p-4 lg:px-6 sticky top-0 backdrop-blur-sm z-[999]">
+    <nav className="flex items-center justify-between p-4 lg:px-6 sticky top-0 backdrop-blur-sm z-[100]">
     <div className="flex-none block md:hidden">
       <MobileMenu menu={menu} />
     </div>
-    <div className="flex items-center w-full">
-      <div className="flex w-full md:w-1/3">
+    <div className="flex items-center w-full juseCallback(
+      () => {
+        first
+      },
+      [second],
+    )
+    tify-ev">
+      <div className="flex grow md:max-w-[40%]">
         <Link
           href={"/"}
           prefetch={true}
@@ -42,10 +48,10 @@ export default async function Navbar() {
           </ul>
         ) : null}
       </div>
-      <div className="justify-center hidden md:flex md:w-1/3">
+      <div className="justify-center hidden md:flex grow">
         <Search />
       </div>
-      <div className="flex justify-end md:w-1/3">
+      <div className="flex justify-end grow">
         <CartModal />
       </div>
     </div>
