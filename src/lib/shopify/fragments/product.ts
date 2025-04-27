@@ -34,6 +34,7 @@ export const productFragment = /* GraphQl */ `
             name
             value
           }
+            
           price {
             amount
             currencyCode

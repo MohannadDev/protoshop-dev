@@ -27,6 +27,7 @@ export default function VariantSelector({
     return null;
   }
 
+  // Build a list of all possible variant combinations for this product
   const combinations: Combination[] = variants.map((variant) => ({
     id: variant.id,
     availableForSale: variant.availableForSale,
@@ -38,8 +39,7 @@ export default function VariantSelector({
       {}
     ),
   }));
-  // console.log(options);
-  // console.log(variants);
+
   return options.map((option) => (
     <form key={option.id}>
       <dl className="mb-8">
@@ -47,10 +47,8 @@ export default function VariantSelector({
         <dd className="flex flex-wrap gap-3">
           {option.values.map((value) => {
             const optionNameLowerCase = option.name.toLowerCase();
-
             // Base option params on current selectedOptions so we can preserve any other param state
             const optionParams = { ...state, [optionNameLowerCase]: value };
-
             // Filter out invalid options and check if the options combination is available for sale
             const filtered = Object.entries(optionParams).filter(
               ([key, value]) =>
@@ -68,12 +66,12 @@ export default function VariantSelector({
               )
             );
 
-            // The option is active if it's in the selected options
             const isActive = state[optionNameLowerCase] === value;
 
             return (
               <button
                 formAction={() => {
+                  // Update the selected option and sync with URL/context
                   const newState = updateOption(optionNameLowerCase, value);
                   updateURL(newState);
                 }}

@@ -3,7 +3,6 @@ import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { useProduct, useUpdateURL } from "./product-context";
 import Image from "next/image";
 import { GridTileImage } from "../grid/tile";
-
 export default function Gallery({
   images,
 }: {
@@ -30,8 +29,9 @@ export default function Gallery({
           />
         )}
       </div>
+      {/* Show navigation arrows if there are multiple images */}
       {images.length > 1 && (
-        <div className="absolute bottom-[15%] flex w-full justify-center">
+        <div className="flex justify-center w-full mt-4">
           <div className="flex items-center mx-auto border border-white rounded-full h-11 bg-neutral-50/80 text-neutral-500 backdrop-blur dark:border-black dark:bg-neutral-900/80">
             <button
               formAction={() => {

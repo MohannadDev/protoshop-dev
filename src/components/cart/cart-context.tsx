@@ -2,6 +2,14 @@
 import { Cart, CartItem, Product, ProductVariant } from "@/lib/shopify/types";
 import { useContext, createContext, use, useOptimistic } from "react";
 
+/**
+ * Cart context and provider for managing cart state and actions across the app.
+ *
+ * Why: The cart is a global feature in e-commerce. This context allows any component
+ * to read or update the cart without prop drilling, and provides optimistic UI updates for better UX.
+ *
+ * The context exposes methods to add, update, and remove items, and keeps the cart in sync with the server.
+ */
 type UpdateType = "plus" | "minus" | "delete";
 
 type CartContextType = {
@@ -20,6 +28,8 @@ type cartAction =
     };
 
 const cartContext = createContext<CartContextType | undefined>(undefined);
+
+// Returns a new, empty cart object
 function createEmptyCart(): Cart {
   return {
     id: undefined,
@@ -33,6 +43,8 @@ function createEmptyCart(): Cart {
     },
   };
 }
+
+// Calculates total quantity and cost for the cart
 function updateCartTotals(
   lines: CartItem[]
 ): Pick<Cart, "totalQuantity" | "cost"> {
@@ -51,9 +63,13 @@ function updateCartTotals(
     },
   };
 }
+
+// Calculates the total cost for a given quantity and price
 function calculateItemCost(quantity: number, price: string): string {
   return (Number(price) * quantity).toString();
 }
+
+// Updates a cart item based on the action (plus, minus, delete)
 function updateCartItem(
   item: CartItem,
   updateType: UpdateType
@@ -76,6 +92,8 @@ function updateCartItem(
     },
   };
 }
+
+// Creates a new cart item or updates an existing one
 function createOrUpdateCartItem(
   existingItem: CartItem | undefined,
   variant: ProductVariant,
@@ -105,6 +123,8 @@ function createOrUpdateCartItem(
     },
   };
 }
+
+// Reducer to handle cart actions (add, update, remove)
 function cartReducer(state: Cart | undefined, action: cartAction): Cart {
   const currentCart = state || createEmptyCart();
   switch (action.type) {
@@ -158,6 +178,13 @@ function cartReducer(state: Cart | undefined, action: cartAction): Cart {
     default: return currentCart;
   }
 }
+
+/**
+ * CartProvider wraps the app and provides cart state and actions to all components.
+ *
+ * - Uses useOptimistic for instant UI updates (before server confirms changes).
+ * - Hydrates initial cart from a promise (server fetch).
+ */
 export function CartProvider({
   children,
   cartPromise,
@@ -174,6 +201,7 @@ export function CartProvider({
       lines: [...(newCart.lines || [])],
     })
   );
+  // Update item quantity or remove item
   const updateCartItem = (merchendiseID: string, updateType: UpdateType) => {
     const newCart = cartReducer(optimisticCart, {
       type: 'UPDATE_ITEM',
@@ -181,6 +209,7 @@ export function CartProvider({
     });
     updateOptimisticCart(newCart);
   };
+  // Add a new item to the cart
   const addCartItem = (variant: ProductVariant, product: Product) => {
     const newCart = cartReducer(optimisticCart, {
       type: 'ADD_ITEM',
@@ -195,6 +224,10 @@ export function CartProvider({
   );
 }
 
+/**
+ * Custom hook to access the cart context.
+ * Throws an error if used outside a CartProvider.
+ */
 export function useCart() {
   const context = useContext(cartContext);
   if (context === undefined) {

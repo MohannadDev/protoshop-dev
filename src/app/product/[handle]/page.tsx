@@ -4,7 +4,7 @@ import { ProductProvider } from "@/components/product/product-context";
 import { ProductDescription } from "@/components/product/product-description";
 import SuspenseFallback from "@/components/suspenseFallback";
 import { HIDDEN_PRODUCT_TAG } from "@/lib/constants";
-import {  getProduct, getProductRecommendations } from "@/lib/shopify";
+import { getProduct, getProductRecommendations } from "@/lib/shopify";
 import { Image } from "@/lib/shopify/types";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -20,6 +20,7 @@ export async function generateMetadata({
 
   if (!product) return notFound();
 
+  // Extract image and SEO info for OpenGraph and robots meta.
   const { url, width, height, altText: alt } = product.featuredImage || {};
   const indexable = !product.tags.includes(HIDDEN_PRODUCT_TAG);
 

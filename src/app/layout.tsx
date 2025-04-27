@@ -6,7 +6,8 @@ import Navbar from "@/components/layout/navbar";
 import { Suspense } from "react";
 import SuspenseFallback from "@/components/suspenseFallback";
 import { CartProvider } from "@/components/cart/cart-context";
-import { initializeCart } from "@/components/cart/actions";
+import { getCart } from "@/lib/shopify";
+import { cookies } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
 };
 
 // Mark route as dynamic
+// This disables static optimization, ensuring cart/user data is always fresh.
 export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({
@@ -31,8 +33,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { cart: initialCart } = await initializeCart();
-  const cartPromise = Promise.resolve(initialCart || undefined);
+  // Only read the cookie, do not set it!
+  const cartId = (await cookies()).get("cartId")?.value;
+  const initialCart = cartId ? await getCart(cartId) : undefined;
+  const cartPromise = Promise.resolve(initialCart);
 
   return (
     <html lang="en">

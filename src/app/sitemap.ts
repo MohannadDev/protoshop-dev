@@ -14,11 +14,13 @@ const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Home route is always included
   const routesMap = [""].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),
   }));
 
+  // Fetch all collections, products, and pages in parallel for performance
   const collectionsPromise = getCollections().then((collections) =>
     collections.map((collection) => ({
       url: `${baseUrl}${collection.path}`,
@@ -43,12 +45,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let fetchedRoutes: Route[] = [];
 
   try {
+    // Wait for all data to be fetched; flatten the results
     fetchedRoutes = (
       await Promise.all([collectionsPromise, productsPromise, pagesPromise])
     ).flat();
   } catch (error) {
+    // If any fetch fails, throw a detailed error for easier debugging
     throw JSON.stringify(error, null, 2);
   }
 
+  // Return all routes for the sitemap
   return [...routesMap, ...fetchedRoutes];
 }

@@ -32,12 +32,21 @@ import {
 } from "./types";
 import { ensureStartsWith } from "../utils";
 import { isShopifyError } from "../type-guards";
-import { getProductQuery, getProductRecommendationsQuery, getProductsQuery } from "./queries/product";
+import {
+  getProductQuery,
+  getProductRecommendationsQuery,
+  getProductsQuery,
+} from "./queries/product";
 import {
   getCollectionProductsQuery,
   getCollectionsQuery,
 } from "./queries/collection";
-import { addToCartMutation, createCartMutation, editCartItemsMutation, removeFromCartMutation } from "./mutations/cart";
+import {
+  addToCartMutation,
+  createCartMutation,
+  editCartItemsMutation,
+  removeFromCartMutation,
+} from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
@@ -68,10 +77,14 @@ export async function shopifyFetch<T>({
 }: ShopifyFetchParams<T>): Promise<{ status: number; body: T } | never> {
   try {
     if (!domain || !key) {
-      console.error('Missing Shopify credentials:', { domain: !!domain, key: !!key });
+      console.error("Missing Shopify credentials:", {
+        domain: !!domain,
+        key: !!key,
+      });
       throw new Error("Missing Shopify credentials");
     }
 
+    // All requests are POSTs to the GraphQL endpoint
     const result = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -84,17 +97,15 @@ export async function shopifyFetch<T>({
         ...(variables && { variables }),
       }),
       cache,
-      ...(tags && { next: { tags } }),
+      ...(tags && { next: { tags } }), // Next.js tag-based revalidation
     });
-    // console.log("shopify fetch response status:", result.status);
-    // console.log(headers, tags, query, variables);
     if (!result.ok) {
       throw new Error(`HTTP error! status: ${result.status}`);
     }
 
     const body = await result.json();
     if (body.errors) {
-      console.error('Shopify API Error:', body.errors);
+      console.error("Shopify API Error:", body.errors);
       throw body.errors[0];
     }
 
@@ -104,11 +115,11 @@ export async function shopifyFetch<T>({
     };
   } catch (error) {
     if (isShopifyError(error)) {
-      console.error('Shopify Error:', {
+      console.error("Shopify Error:", {
         cause: error.cause?.toString(),
         status: error.status,
         message: error.message,
-        query
+        query,
       });
       throw {
         cause: error.cause?.toString() || "unknown",
@@ -127,8 +138,6 @@ export async function shopifyFetch<T>({
 }
 
 export async function getMenu(handle: string): Promise<Menu[]> {
-  // const menu = await fetch(`${process.env.SHOPIFY_STORE_URL}/api/2024-04/menus/${handle}.json`);
-  // return menu.json();
   const res = await shopifyFetch<ShopifyMenuOperation>({
     query: getMenuQuery,
     tags: [TAGS.collections],
@@ -146,6 +155,9 @@ export async function getMenu(handle: string): Promise<Menu[]> {
     })) || []
   );
 }
+
+// --- Data Reshaping Utilities ---
+// Shopify's GraphQL API returns deeply nested data (edges/nodes). These helpers flatten and adapt it for our app.
 function removeEdgesAndNodes<T>(array: Connection<T>): T[] {
   return array.edges.map((edge) => edge?.node);
 }
@@ -163,6 +175,7 @@ function reshapeProduct(
   product: ShopifyProduct,
   filterHiddenProducts: boolean = true
 ) {
+  // Hide products with the special hidden tag unless explicitly requested
   if (
     !product ||
     (filterHiddenProducts && product.tags.includes(HIDDEN_PRODUCT_TAG))
@@ -197,7 +210,6 @@ export async function getProducts({
   reverse?: boolean;
   sortKey?: string;
 }): Promise<Product[]> {
-
   const res = await shopifyFetch<ShopifyProductsOperation>({
     query: getProductsQuery,
     tags: [TAGS.products],
@@ -238,6 +250,7 @@ export async function getCollections(): Promise<Collection[]> {
   });
 
   const shopifyCollections = removeEdgesAndNodes(res?.body?.data?.collections);
+  // Add a default "All" collection for UX
   const collections = [
     {
       handle: "",
@@ -294,10 +307,10 @@ export async function getProduct(handle: string) {
       handle,
     },
   });
-  // console.log(res);
   return reshapeProduct(res.body.data.product, false);
 }
 function reshapeCart(cart: ShopifyCart): Cart {
+  // Shopify sometimes returns null for totalTaxAmount; default to 0 for safety
   if (!cart.cost?.totalAmount) {
     cart.cost.totalTaxAmount = { amount: "0.0", currencyCode: "USD" };
   }
@@ -311,21 +324,24 @@ export async function createCart(): Promise<Cart> {
 
   return reshapeCart(res.body.data.cartCreate.cart);
 }
-export async function removeFromCart(cartId: string, lineIds: string[]) : Promise<Cart> {
+export async function removeFromCart(
+  cartId: string,
+  lineIds: string[]
+): Promise<Cart> {
   const res = await shopifyFetch<ShopifyRemoveFromCartOperation>({
     query: removeFromCartMutation,
     variables: {
       cartId,
-      lineIds
+      lineIds,
     },
-    cache: "no-store"
-  })
-  return reshapeCart(res.body.data.cartLinesRemove.cart)
+    cache: "no-store",
+  });
+  return reshapeCart(res.body.data.cartLinesRemove.cart);
 }
 
 export async function addToCart(
   cartId: string,
-  lines: { merchandiseId: string; quantity: number}[]
+  lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
   const res = await shopifyFetch<ShopifyAddToCartOperation>({
     query: addToCartMutation,
@@ -338,7 +354,9 @@ export async function addToCart(
 
   return reshapeCart(res.body.data.cartLinesAdd.cart);
 }
-export async function getProductRecommendations(productId: string): Promise<Product[] >{
+export async function getProductRecommendations(
+  productId: string
+): Promise<Product[]> {
   const res = await shopifyFetch<ShopifyProductRecommendationsOperation>({
     query: getProductRecommendationsQuery,
     tags: [TAGS.products],
@@ -346,22 +364,27 @@ export async function getProductRecommendations(productId: string): Promise<Prod
       productId,
     },
   });
-  // console.log(res);
   return reshapeProducts(res.body.data.productRecommendations);
 }
-export async function getCart(cartId: string | undefined): Promise<Cart | undefined> {
+
+/**
+ *  Used to restore a user's cart from a session or cookie.
+ */
+export async function getCart(
+  cartId: string | undefined
+): Promise<Cart | undefined> {
   if (!cartId) {
-    return undefined
+    return undefined;
   }
   const res = await shopifyFetch<ShopifyCartOperation>({
     query: getCartQuery,
-    variables: {cartId},
-    tags: [TAGS.cart]
-  })
+    variables: { cartId },
+    tags: [TAGS.cart],
+  });
   // all costs become null when you checkout
-  if(!res.body.data.cart) return undefined;
+  if (!res.body.data.cart) return undefined;
 
-  return reshapeCart(res.body.data.cart)
+  return reshapeCart(res.body.data.cart);
 }
 export async function updateCart(
   cartId: string,
@@ -379,11 +402,24 @@ export async function updateCart(
   return reshapeCart(res.body.data.cartLinesUpdate.cart);
 }
 
-// This is called from `app/api/revalidate.ts` so providers can control revalidation logic.
-export async function revalidate(req: NextRequest): Promise<NextResponse> {
-  // We always need to respond with a 200 status code to Shopify,
-  // otherwise it will continue to retry the request.
+/**
+ * Handles on-demand revalidation (Incremental Static Regeneration, ISR) from Shopify webhooks.
+ *
+ *When content or products are updated in Shopify, we want our Next.js static pages
+ * (e.g., product or collection pages) to update immediately.
+ * Shopify can send webhooks to this endpoint whenever a relevant resource changes.
+ *
+ * How it works:
+ * 1. Shopify sends a webhook to this endpoint when a product or collection is created, updated, or deleted.
+ * 2. The function checks the webhook topic (e.g., 'products/update') and a secret for security.
+ * 3. If the topic is relevant and the secret is valid, it calls Next.js's revalidateTag to invalidate the cache for affected pages.
+ * 4. Always returns a 200 response to Shopify, even if the secret is invalid, to prevent repeated retries.
+ * 
+ * Next.js's revalidateTag is used to invalidate all pages tagged with the relevant resource (products or collections),
+ * so the next request will fetch fresh data from Shopify.
 
+ */
+export async function revalidate(req: NextRequest): Promise<NextResponse> {
   const collectionWebhooks = [
     "collections/create",
     "collections/delete",
@@ -398,14 +434,12 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
   const secret = req.nextUrl.searchParams.get("secret");
   const isCollectionUpdate = collectionWebhooks.includes(topic);
   const isProductUpdate = productWebhooks.includes(topic);
-  console.log("runs")
   if (!secret || secret !== env.SHOPIFY_REVALIDATION_SECRET) {
     console.error("Invalid revalidation secret.");
     return NextResponse.json({ status: 200 });
   }
 
   if (!isCollectionUpdate && !isProductUpdate) {
-    // We don't need to revalidate anything for any other topics.
     return NextResponse.json({ status: 200 });
   }
 
@@ -420,6 +454,9 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
 }
 
+/**
+  Used for dynamic content pages (e.g., /about, /faq).
+ */
 export async function getPage(handle: string): Promise<Page> {
   const res = await shopifyFetch<ShopifyPageOperation>({
     query: getPageQuery,
@@ -430,7 +467,9 @@ export async function getPage(handle: string): Promise<Page> {
   return res.body.data.pageByHandle;
 }
 
-
+/**
+ sed for navigation, sitemaps, and search.
+ */
 export async function getPages(): Promise<Page[]> {
   const res = await shopifyFetch<ShopifyPagesOperation>({
     query: getPagesQuery,

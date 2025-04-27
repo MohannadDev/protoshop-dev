@@ -25,6 +25,7 @@ export default function ProductGridItems({
                 currencyCode: product.priceRange.maxVariantPrice.currencyCode,
               }}
               src={product.featuredImage?.url}
+              images={product.images}
               fill
               sizes="(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
             />

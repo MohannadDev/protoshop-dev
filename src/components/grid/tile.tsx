@@ -1,16 +1,19 @@
 import clsx from "clsx";
 import Image from "next/image";
 import Label from "../label";
-import { title } from "process";
+import { Image as tImage } from "@/lib/shopify/types";
+import HoverableImage from "./hoverableImage";
 
 export function GridTileImage({
   isInteractive = true,
   active,
   label,
+  images,
   ...props
 }: {
   isInteractive?: boolean;
   active?: boolean;
+  images?: tImage[];
   label?: {
     title: string;
     amount: string;
@@ -29,16 +32,27 @@ export function GridTileImage({
         }
       )}
     >
-      {props.src ? (
-        <Image
-          className={clsx("relative h-full w-full object-contain", {
+      {props.src && (images?.length ?? 0) > 1 ? (
+        <HoverableImage
+          images={images ?? []}
+          className={clsx(" relative h-[90%] w-full h-md object-contain aspect-square", {
             "transition duration-300 ease-in-out group-hover:scale-105":
               isInteractive,
           })}
           {...props}
-          alt={`${title} image`}
         />
-      ) : null}
+      ) : (
+        props.src && (
+          <Image
+            className={clsx(" relative h-[90%] w-full object-contain aspect-square", {
+              "transition duration-300 ease-in-out group-hover:scale-105 ":
+                isInteractive,
+            })}
+            {...props}
+            alt={props.alt ?? "Product Image"}
+          />
+        )
+      )}
       {label ? (
         <Label
           title={label.title}
