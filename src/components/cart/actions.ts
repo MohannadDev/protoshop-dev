@@ -6,7 +6,7 @@ import { addToCart, createCart, getCart, removeFromCart, updateCart } from "@/li
 import { redirect } from "next/navigation";
 
 export async function addItem(
-  //   prevState: any,
+
   prevState: unknown,
   selectedVariantID: string | undefined
 ) {

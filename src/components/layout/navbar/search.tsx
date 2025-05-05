@@ -6,13 +6,17 @@ import { useState, useEffect } from "react";
 
 export default function Search() {
   const router = useRouter();
+  //  provides access to the current query string, so we can sync the input with the URL.
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState("");
 
+  // Keep the input value in sync with the URL's 's' query param.
+  // to ensures the search box always reflects the current search state, even on navigation.
   useEffect(() => {
     setSearchValue(searchParams?.get("s") || "");
   }, [searchParams]);
 
+  //  updates the URL with the new search param.
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 

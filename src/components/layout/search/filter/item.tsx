@@ -7,6 +7,7 @@ import { createUrl } from "@/lib/utils";
 import type { SortFilterItem } from "@/lib/constants";
 import clsx from "clsx";
 
+// Handles filters that are based on a path (category links)
 function PathFilterItem({ item }: { item: PathFilterItem }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();

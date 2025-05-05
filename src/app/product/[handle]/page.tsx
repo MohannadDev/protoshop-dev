@@ -57,6 +57,7 @@ export default async function ProductPage({
 }) {
   const product = await getProduct((await params).handle);
   if (!product) return notFound();
+  console.log(product)
   return (
     <ProductProvider>
       <div className="px-4 mx-auto max-w-screen-2xl">

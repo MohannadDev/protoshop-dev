@@ -7,7 +7,7 @@ export async function POST() {
   if (!cart?.id) {
     return NextResponse.json({ error: "Failed to create cart" }, { status: 500 });
   }
-  cookies().set("cartId", cart.id, {
+  (await cookies()).set("cartId", cart.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

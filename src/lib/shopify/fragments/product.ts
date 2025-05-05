@@ -32,12 +32,14 @@ export const productFragment = /* GraphQl */ `
           availableForSale
           selectedOptions {
             name
-            value
+            value 
           }
-            
           price {
             amount
             currencyCode
+          }
+          image {
+            ...image
           }
         }
       }

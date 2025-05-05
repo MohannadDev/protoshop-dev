@@ -58,7 +58,7 @@ export default function Gallery({
         </div>
       )}
       {images.length > 1 && (
-        <ul className="flex items-center justify-center gap-2 py-1 my-12 overflow-auto lg:mb-0">
+        <ul className="flex items-center justify-center gap-2 py-1 my-12 overflow-auto overflow-y-hidden lg:mb-0">
           {images.map((image, index) => {
             const isActive = index === imageIndex;
             return (

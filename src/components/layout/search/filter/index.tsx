@@ -1,3 +1,4 @@
+// This file is all about rendering a list of filter options for search/sort in the UI.
 import { SortFilterItem } from "@/lib/constants";
 import FilterItemDropDown from "./dropdown";
 import { FilterItem } from "./item";
