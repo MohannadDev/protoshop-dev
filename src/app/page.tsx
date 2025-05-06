@@ -27,11 +27,11 @@ export default function Home() {
               </p>
               <div className="flex flex-col w-full gap-2 md:flex-row text-nowrap">
                 <Link
-                  href="/search/womens-collection"
+                  href="/search/e-products"
                   className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors border rounded-md shadow h-9 bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                   prefetch={false}
                 >
-                  Shop Women
+                  E-Products
                 </Link>
                 <Link
                   href="/search/mens-collection"
