@@ -27,11 +27,11 @@ export default function Home() {
               </p>
               <div className="flex flex-col w-full gap-2 md:flex-row text-nowrap">
                 <Link
-                  href="/search/e-products"
-                  className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors border rounded-md shadow h-9 bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                  href="/search"
+                  className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors border border-red-300 rounded-md shadow-sm h-9 border-input bg-background hover:bg-red-300 hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                   prefetch={false}
                 >
-                  E-Products
+                  Shop
                 </Link>
                 <Link
                   href="/search/mens-collection"
@@ -39,13 +39,6 @@ export default function Home() {
                   prefetch={false}
                 >
                   Shop Men
-                </Link>
-                <Link
-                  href="/search"
-                  className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors border border-red-300 rounded-md shadow-sm h-9 border-input bg-background hover:bg-red-300 hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                  prefetch={false}
-                >
-                  Shop Sales
                 </Link>
               </div>
             </div>
@@ -77,7 +70,6 @@ export default function Home() {
             </div>
           </div>
           <div className="grid items-center justify-center gap-8 mx-auto sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl ">
-          
             <div className="grid gap-1">
               <Link
                 href="/search/mens-collection"
@@ -110,13 +102,17 @@ export default function Home() {
                 </h3>
               </Link>
             </div>
-   
           </div>
         </div>
       </section>
       <section className="w-full py-12 lg:py-7 bg-[url('/sale-backdrop.svg')] bg-no-repeat bg-cover grid place-content-center">
         <div className="container grid items-center justify-center gap-4 px-4 text-center md:px-6">
-          <Image src="/sale-banner.svg" width={800} height={200} alt="sale footer banner" />
+          <Image
+            src="/sale-banner.svg"
+            width={800}
+            height={200}
+            alt="sale footer banner"
+          />
           <div className="z-50 space-y-3">
             <div className="bg-white dark:bg-black">
               <h2 className="p-2 text-3xl font-bold tracking-tighter md:text-4xl/tight">
