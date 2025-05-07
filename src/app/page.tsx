@@ -41,7 +41,7 @@ export default function Home() {
                   Shop Men
                 </Link>
                 <Link
-                  href="/search/sales"
+                  href="/search"
                   className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors border border-red-300 rounded-md shadow-sm h-9 border-input bg-background hover:bg-red-300 hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                   prefetch={false}
                 >
